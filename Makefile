@@ -29,11 +29,12 @@ OBJS = \
 	vm.o\
 
 SRC_DIR := src
-OBJ_DIR := obj
 ASM_DIR := $(SRC_DIR)/asm
+OBJ_DIR := obj
 INC_DIR := include
 BUILD_DIR := build
 SCRIPTS_DIR := scripts
+RUNOFF_DIR := $(SCRIPTS_DIR)/runoff
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -202,7 +203,7 @@ clean:
 	$(UPROGS)
 
 # make a printout
-FILES = $(shell grep -v '^\#' runoff.list)
+FILES = $(shell grep -v '^\#' $(RUNOFF_DIR)/runoff.list)
 PRINT = runoff.list runoff.spec README toc.hdr toc.ftr $(FILES)
 
 xv6.pdf: $(PRINT)
