@@ -239,6 +239,7 @@ $(BUILD_DIR)/mkfs: $(SRC_DIR)/mkfs.c $(INC_DIR)/fs.h
 # details:
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 .PRECIOUS: $(OBJ_DIR)/%.o
+.PRECIOUS: $(UPROG_OBJ_DIR)/%.o
 
 UPROG_NAMES := \
 	_cat         \

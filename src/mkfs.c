@@ -128,25 +128,29 @@ main(int argc, char *argv[])
   iappend(rootino, &de, sizeof(de));
 
   for(i = 2; i < argc; i++){
-    assert(index(argv[i], '/') == 0);
+    // assert(index(argv[i], '/') == 0);
 
-    if((fd = open(argv[i], 0)) < 0){
+    if((fd = open(argv[i], O_RDONLY)) < 0){
       perror(argv[i]);
       exit(1);
     }
+
+    char *name;
+    name = strrchr(argv[i], '/');
+    name = name ? name + 1 : argv[i];
 
     // Skip leading _ in name when writing to file system.
     // The binaries are named _rm, _cat, etc. to keep the
     // build operating system from trying to execute them
     // in place of system binaries like rm and cat.
-    if(argv[i][0] == '_')
-      ++argv[i];
+    if(name[0] == '_')
+      ++name;
 
     inum = ialloc(T_FILE);
 
     bzero(&de, sizeof(de));
     de.inum = xshort(inum);
-    strncpy(de.name, argv[i], DIRSIZ);
+    strncpy(de.name, name, sizeof(de.name));
     iappend(rootino, &de, sizeof(de));
 
     while((cc = read(fd, buf, sizeof(buf))) > 0)
