@@ -1,40 +1,54 @@
-OBJS = \
-	bio.o\
-	console.o\
-	exec.o\
-	file.o\
-	fs.o\
-	ide.o\
-	ioapic.o\
-	kalloc.o\
-	kbd.o\
-	lapic.o\
-	log.o\
-	main.o\
-	mp.o\
-	picirq.o\
-	pipe.o\
-	proc.o\
-	sleeplock.o\
-	spinlock.o\
-	string.o\
-	swtch.o\
-	syscall.o\
-	sysfile.o\
-	sysproc.o\
-	trapasm.o\
-	trap.o\
-	uart.o\
-	vectors.o\
-	vm.o\
-
 SRC_DIR := src
 ASM_DIR := $(SRC_DIR)/asm
 OBJ_DIR := obj
+LD_DIR := linker
 INC_DIR := include
 BUILD_DIR := build
 SCRIPTS_DIR := scripts
 RUNOFF_DIR := $(SCRIPTS_DIR)/runoff
+
+C_OBJ_NAMES := \
+	bio.o      \
+	console.o  \
+	exec.o     \
+	file.o     \
+	fs.o       \
+	ide.o      \
+	ioapic.o   \
+	kalloc.o   \
+	kbd.o      \
+	lapic.o    \
+	log.o      \
+	main.o     \
+	mp.o       \
+	picirq.o   \
+	pipe.o     \
+	proc.o     \
+	sleeplock.o\
+	spinlock.o \
+	string.o   \
+	syscall.o  \
+	sysfile.o  \
+	sysproc.o  \
+	trap.o     \
+	uart.o     \
+	vm.o       \
+
+C_OBJS = $(addprefix $(OBJ_DIR)/,$(C_OBJ_NAMES))
+
+ASM_OBJ_NAMES := \
+	entry.o        \
+	swtch.o        \
+	trapasm.o      \
+
+ASM_OBJS = $(addprefix $(OBJ_DIR)/,$(ASM_OBJ_NAMES))
+
+PERL_OBJ_NAMES := \
+	vectors.o       \
+
+PERL_OBJS = $(addprefix $(OBJ_DIR)/,$(PERL_OBJ_NAMES))
+
+OBJS := $(C_OBJS) $(ASM_OBJS) $(PERL_OBJS)
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -84,7 +98,7 @@ AS = $(TOOLPREFIX)gas
 LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
-CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp
+CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -I$(INC_DIR)
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
 # FreeBSD ld wants ``elf_i386_fbsd''
@@ -116,22 +130,31 @@ bootblock: $(ASM_DIR)/bootasm.S $(SRC_DIR)/bootmain.c
 	$(OBJCOPY) -S -O binary -j .text $(OBJ_DIR)/bootblock.o $(BUILD_DIR)/bootblock
 	$(SCRIPTS_DIR)/sign.pl $(BUILD_DIR)/bootblock
 
-entryother: entryother.S
-	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -c entryother.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7000 -o bootblockother.o entryother.o
-	$(OBJCOPY) -S -O binary -j .text bootblockother.o entryother
-	$(OBJDUMP) -S bootblockother.o > entryother.asm
+$(C_OBJS): $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-initcode: initcode.S
-	$(CC) $(CFLAGS) -nostdinc -I. -c initcode.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o
-	$(OBJCOPY) -S -O binary initcode.out initcode
-	$(OBJDUMP) -S initcode.o > initcode.asm
+$(ASM_OBJS): $(OBJ_DIR)/%.o : $(ASM_DIR)/%.S
+	$(CC) $(CFLAGS) -c $< -o $@
 
-kernel: $(OBJS) entry.o entryother initcode kernel.ld
-	$(LD) $(LDFLAGS) -T kernel.ld -o kernel entry.o $(OBJS) -b binary initcode entryother
-	$(OBJDUMP) -S kernel > kernel.asm
-	$(OBJDUMP) -t kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > kernel.sym
+$(PERL_OBJS): $(OBJ_DIR)/%.o : $(BUILD_DIR)/vectors.S
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/entryother: $(ASM_DIR)/entryother.S
+	$(CC) $(CFLAGS) -fno-pic -nostdinc -I$(INC_DIR) -c $(ASM_DIR)/entryother.S -o $(OBJ_DIR)/entryother.o
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7000 -o $(OBJ_DIR)/bootblockother.o $(OBJ_DIR)/entryother.o
+	$(OBJCOPY) -S -O binary -j .text $(OBJ_DIR)/bootblockother.o $(BUILD_DIR)/entryother
+	$(OBJDUMP) -S $(OBJ_DIR)/bootblockother.o > $(ASM_DIR)/entryother.asm
+
+$(BUILD_DIR)/initcode: $(ASM_DIR)/initcode.S
+	$(CC) $(CFLAGS) -nostdinc -I$(INC_DIR) -c $(ASM_DIR)/initcode.S -o $(OBJ_DIR)/initcode.o
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o $(BUILD_DIR)/initcode.out $(OBJ_DIR)/initcode.o
+	$(OBJCOPY) -S -O binary $(BUILD_DIR)/initcode.out $(BUILD_DIR)/initcode
+	$(OBJDUMP) -S $(OBJ_DIR)/initcode.o > $(ASM_DIR)/initcode.asm
+
+kernel: $(OBJS) $(OBJ_DIR)/entry.o $(BUILD_DIR)/entryother $(BUILD_DIR)/initcode $(LD_DIR)/kernel.ld
+	$(LD) $(LDFLAGS) -T $(LD_DIR)/kernel.ld -o $(BUILD_DIR)/kernel $(OBJ_DIR)/entry.o $(OBJS) -b binary $(BUILD_DIR)/initcode $(BUILD_DIR)/entryother
+	$(OBJDUMP) -S $(BUILD_DIR)/kernel > $(ASM_DIR)/kernel.asm
+	$(OBJDUMP) -t $(BUILD_DIR)/kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $(BUILD_DIR)/kernel.sym
 
 # kernelmemfs is a copy of kernel that maintains the
 # disk image in memory instead of writing to a disk.
@@ -148,8 +171,8 @@ kernelmemfs: $(MEMFSOBJS) entry.o entryother initcode kernel.ld fs.img
 tags: $(OBJS) entryother.S _init
 	etags *.S *.c
 
-vectors.S: vectors.pl
-	./vectors.pl > vectors.S
+$(BUILD_DIR)/vectors.S: $(SCRIPTS_DIR)/vectors.pl
+	$(SCRIPTS_DIR)/vectors.pl > $(BUILD_DIR)/vectors.S
 
 ULIB = ulib.o usys.o printf.o umalloc.o
 
@@ -171,7 +194,7 @@ mkfs: mkfs.c fs.h
 # that disk image changes after first build are persistent until clean.  More
 # details:
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
-.PRECIOUS: %.o
+.PRECIOUS: $(OBJ_DIR)/%.o
 
 UPROGS=\
 	_cat\
@@ -193,33 +216,36 @@ UPROGS=\
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
 
--include *.d
+-include $(OBJ_DIR)/*.d
+
+list-ignored-files:
+	git ls-files --others --ignored --exclude-standard
 
 clean:
-	rm -f \
-	*.tex \
-	*.dvi \
-	*.idx \
-	*.aux \
-	*.log \
-	*.ind \
-	*.ilg \
-	$(OBJ_DIR)/*.o \
-	$(OBJ_DIR)/*.d \
-	$(ASM_DIR)/*.asm \
-	*.sym \
-	vectors.S \
-	$(BUILD_DIR)/bootblock \
-	entryother \
-	initcode \
-	initcode.out \
-	kernel \
-	xv6.img \
-	fs.img \
-	kernelmemfs \
-	xv6memfs.img \
-	mkfs \
-	.gdbinit \
+	rm -f                     \
+	*.tex                     \
+	*.dvi                     \
+	*.idx                     \
+	*.aux                     \
+	*.log                     \
+	*.ind                     \
+	*.ilg                     \
+	$(OBJ_DIR)/*.o            \
+	$(OBJ_DIR)/*.d            \
+	$(ASM_DIR)/*.asm          \
+	*.sym                     \
+	$(BUILD_DIR)/vectors.S    \
+	$(BUILD_DIR)/bootblock    \
+	$(BUILD_DIR)/entryother   \
+	$(BUILD_DIR)/initcode     \
+	$(BUILD_DIR)/initcode.out \
+	kernel                    \
+	xv6.img                   \
+	fs.img                    \
+	kernelmemfs               \
+	xv6memfs.img              \
+	mkfs                      \
+	.gdbinit                  \
 	$(UPROGS)
 
 # make a printout
