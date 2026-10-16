@@ -196,10 +196,30 @@ fs.img: mkfs README $(UPROGS)
 -include *.d
 
 clean:
-	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
-	*.o *.d *.asm *.sym vectors.S bootblock entryother \
-	initcode initcode.out kernel xv6.img fs.img kernelmemfs \
-	xv6memfs.img mkfs .gdbinit \
+	rm -f \
+	*.tex \
+	*.dvi \
+	*.idx \
+	*.aux \
+	*.log \
+	*.ind \
+	*.ilg \
+	$(OBJ_DIR)/*.o \
+	$(OBJ_DIR)/*.d \
+	$(ASM_DIR)/*.asm \
+	*.sym \
+	vectors.S \
+	$(BUILD_DIR)/bootblock \
+	entryother \
+	initcode \
+	initcode.out \
+	kernel \
+	xv6.img \
+	fs.img \
+	kernelmemfs \
+	xv6memfs.img \
+	mkfs \
+	.gdbinit \
 	$(UPROGS)
 
 # make a printout
