@@ -28,6 +28,13 @@ OBJS = \
 	vectors.o\
 	vm.o\
 
+SRC_DIR := src
+OBJ_DIR := obj
+ASM_DIR := $(SRC_DIR)/asm
+INC_DIR := include
+BUILD_DIR := build
+SCRIPTS_DIR := scripts
+
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
 
@@ -100,13 +107,13 @@ xv6memfs.img: bootblock kernelmemfs
 	dd if=bootblock of=xv6memfs.img conv=notrunc
 	dd if=kernelmemfs of=xv6memfs.img seek=1 conv=notrunc
 
-bootblock: bootasm.S bootmain.c
-	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c bootmain.c
-	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -c bootasm.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00 -o bootblock.o bootasm.o bootmain.o
-	$(OBJDUMP) -S bootblock.o > bootblock.asm
-	$(OBJCOPY) -S -O binary -j .text bootblock.o bootblock
-	./sign.pl bootblock
+bootblock: $(ASM_DIR)/bootasm.S $(SRC_DIR)/bootmain.c
+	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I$(INC_DIR) -c $(SRC_DIR)/bootmain.c -o $(OBJ_DIR)/bootmain.o
+	$(CC) $(CFLAGS) -fno-pic -nostdinc -I$(INC_DIR) -c $(ASM_DIR)/bootasm.S -o $(OBJ_DIR)/bootasm.o
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00 -o $(OBJ_DIR)/bootblock.o $(OBJ_DIR)/bootasm.o $(OBJ_DIR)/bootmain.o
+	$(OBJDUMP) -S $(OBJ_DIR)/bootblock.o > $(ASM_DIR)/bootblock.asm
+	$(OBJCOPY) -S -O binary -j .text $(OBJ_DIR)/bootblock.o $(BUILD_DIR)/bootblock
+	$(SCRIPTS_DIR)/sign.pl $(BUILD_DIR)/bootblock
 
 entryother: entryother.S
 	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -c entryother.S
