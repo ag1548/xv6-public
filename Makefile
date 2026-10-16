@@ -37,7 +37,6 @@ C_OBJ_NAMES := \
 C_OBJS = $(addprefix $(OBJ_DIR)/,$(C_OBJ_NAMES))
 
 ASM_OBJ_NAMES := \
-	entry.o        \
 	swtch.o        \
 	trapasm.o      \
 
@@ -100,7 +99,7 @@ OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -I$(INC_DIR)
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
-ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
+ASFLAGS = -m32 -gdwarf-2 -Wa,-divide -I$(INC_DIR)
 # FreeBSD ld wants ``elf_i386_fbsd''
 LDFLAGS += -m $(shell $(LD) -V | grep elf_i386 2>/dev/null | head -n 1)
 
@@ -133,11 +132,14 @@ bootblock: $(ASM_DIR)/bootasm.S $(SRC_DIR)/bootmain.c
 $(C_OBJS): $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(OBJ_DIR)/entry.o: $(ASM_DIR)/entry.S
+	$(CC) $(ASFLAGS) -c $< -o $@
+
 $(ASM_OBJS): $(OBJ_DIR)/%.o : $(ASM_DIR)/%.S
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(ASFLAGS) -c $< -o $@
 
 $(PERL_OBJS): $(OBJ_DIR)/%.o : $(BUILD_DIR)/vectors.S
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(ASFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/entryother: $(ASM_DIR)/entryother.S
 	$(CC) $(CFLAGS) -fno-pic -nostdinc -I$(INC_DIR) -c $(ASM_DIR)/entryother.S -o $(OBJ_DIR)/entryother.o

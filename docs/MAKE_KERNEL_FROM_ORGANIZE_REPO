@@ -1,0 +1,46 @@
+$ make kernel
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/bio.c -o obj/bio.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/console.c -o obj/console.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/exec.c -o obj/exec.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/file.c -o obj/file.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/fs.c -o obj/fs.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/ide.c -o obj/ide.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/ioapic.c -o obj/ioapic.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/kalloc.c -o obj/kalloc.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/kbd.c -o obj/kbd.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/lapic.c -o obj/lapic.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/log.c -o obj/log.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/main.c -o obj/main.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/mp.c -o obj/mp.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/picirq.c -o obj/picirq.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/pipe.c -o obj/pipe.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/proc.c -o obj/proc.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/sleeplock.c -o obj/sleeplock.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/spinlock.c -o obj/spinlock.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/string.c -o obj/string.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/syscall.c -o obj/syscall.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/sysfile.c -o obj/sysfile.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/sysproc.c -o obj/sysproc.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/trap.c -o obj/trap.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/uart.c -o obj/uart.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -c src/vm.c -o obj/vm.o
+gcc -m32 -gdwarf-2 -Wa,-divide -Iinclude -c src/asm/swtch.S -o obj/swtch.o
+gcc -m32 -gdwarf-2 -Wa,-divide -Iinclude -c src/asm/trapasm.S -o obj/trapasm.o
+scripts/vectors.pl > build/vectors.S
+gcc -m32 -gdwarf-2 -Wa,-divide -Iinclude -c build/vectors.S -o obj/vectors.o
+gcc -m32 -gdwarf-2 -Wa,-divide -Iinclude -c src/asm/entry.S -o obj/entry.o
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -fno-pic -nostdinc -Iinclude -c src/asm/entryother.S -o obj/entryother.o
+ld -m    elf_i386 -N -e start -Ttext 0x7000 -o obj/bootblockother.o obj/entryother.o
+ld: warning: obj/bootblockother.o has a LOAD segment with RWX permissions
+objcopy -S -O binary -j .text obj/bootblockother.o build/entryother
+objdump -S obj/bootblockother.o > src/asm/entryother.asm
+gcc -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-tree-vrp -Iinclude -fno-stack-protector -fno-pie -no-pie -nostdinc -Iinclude -c src/asm/initcode.S -o obj/initcode.o
+ld -m    elf_i386 -N -e start -Ttext 0 -o build/initcode.out obj/initcode.o
+ld: warning: build/initcode.out has a LOAD segment with RWX permissions
+objcopy -S -O binary build/initcode.out build/initcode
+objdump -S obj/initcode.o > src/asm/initcode.asm
+ld -m    elf_i386 -T linker/kernel.ld -o build/kernel obj/entry.o obj/bio.o obj/console.o obj/exec.o obj/file.o obj/fs.o obj/ide.o obj/ioapic.o obj/kalloc.o obj/kbd.o obj/lapic.o obj/log.o obj/main.o obj/mp.o obj/picirq.o obj/pipe.o obj/proc.o obj/sleeplock.o obj/spinlock.o obj/string.o obj/syscall.o obj/sysfile.o obj/sysproc.o obj/trap.o obj/uart.o obj/vm.o obj/swtch.o obj/trapasm.o obj/vectors.o -b binary build/initcode build/entryother
+ld: warning: build/entryother: missing .note.GNU-stack section implies executable stack
+ld: NOTE: This behaviour is deprecated and will be removed in a future version of the linker
+objdump -S build/kernel > src/asm/kernel.asm
+objdump -t build/kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$/d' > build/kernel.sym
