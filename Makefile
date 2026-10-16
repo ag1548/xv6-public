@@ -4,8 +4,22 @@ OBJ_DIR := obj
 LD_DIR := linker
 INC_DIR := include
 BUILD_DIR := build
+IMAGES_DIR := $(BUILD_DIR)/images
 SCRIPTS_DIR := scripts
 RUNOFF_DIR := $(SCRIPTS_DIR)/runoff
+
+DIRS := \
+	$(SRC_DIR)     \
+	$(ASM_DIR)     \
+	$(OBJ_DIR)     \
+	$(LD_DIR)      \
+	$(INC_DIR)     \
+	$(BUILD_DIR)   \
+	$(IMAGES_DIR)  \
+	$(SCRIPTS_DIR) \
+	$(RUNOFF_DIR)  \
+
+$(shell mkdir -p $(DIRS))
 
 C_OBJ_NAMES := \
 	bio.o      \
@@ -111,17 +125,17 @@ ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]nopie'),)
 CFLAGS += -fno-pie -nopie
 endif
 
-xv6.img: bootblock kernel
-	dd if=/dev/zero of=xv6.img count=10000
-	dd if=bootblock of=xv6.img conv=notrunc
-	dd if=kernel of=xv6.img seek=1 conv=notrunc
+$(IMAGES_DIR)/xv6.img: $(BUILD_DIR)/bootblock $(BUILD_DIR)/kernel
+	dd if=/dev/zero of=$(IMAGES_DIR)/xv6.img count=10000
+	dd if=$(BUILD_DIR)/bootblock of=$(IMAGES_DIR)/xv6.img conv=notrunc
+	dd if=$(BUILD_DIR)/kernel of=$(IMAGES_DIR)/xv6.img seek=1 conv=notrunc
 
 xv6memfs.img: bootblock kernelmemfs
 	dd if=/dev/zero of=xv6memfs.img count=10000
 	dd if=bootblock of=xv6memfs.img conv=notrunc
 	dd if=kernelmemfs of=xv6memfs.img seek=1 conv=notrunc
 
-bootblock: $(ASM_DIR)/bootasm.S $(SRC_DIR)/bootmain.c
+$(BUILD_DIR)/bootblock: $(ASM_DIR)/bootasm.S $(SRC_DIR)/bootmain.c
 	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I$(INC_DIR) -c $(SRC_DIR)/bootmain.c -o $(OBJ_DIR)/bootmain.o
 	$(CC) $(CFLAGS) -fno-pic -nostdinc -I$(INC_DIR) -c $(ASM_DIR)/bootasm.S -o $(OBJ_DIR)/bootasm.o
 	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00 -o $(OBJ_DIR)/bootblock.o $(OBJ_DIR)/bootasm.o $(OBJ_DIR)/bootmain.o
@@ -153,7 +167,7 @@ $(BUILD_DIR)/initcode: $(ASM_DIR)/initcode.S
 	$(OBJCOPY) -S -O binary $(BUILD_DIR)/initcode.out $(BUILD_DIR)/initcode
 	$(OBJDUMP) -S $(OBJ_DIR)/initcode.o > $(ASM_DIR)/initcode.asm
 
-kernel: $(OBJS) $(OBJ_DIR)/entry.o $(BUILD_DIR)/entryother $(BUILD_DIR)/initcode $(LD_DIR)/kernel.ld
+$(BUILD_DIR)/kernel: $(OBJS) $(OBJ_DIR)/entry.o $(BUILD_DIR)/entryother $(BUILD_DIR)/initcode $(LD_DIR)/kernel.ld
 	$(LD) $(LDFLAGS) -T $(LD_DIR)/kernel.ld -o $(BUILD_DIR)/kernel $(OBJ_DIR)/entry.o $(OBJS) -b binary $(BUILD_DIR)/initcode $(BUILD_DIR)/entryother
 	$(OBJDUMP) -S $(BUILD_DIR)/kernel > $(ASM_DIR)/kernel.asm
 	$(OBJDUMP) -t $(BUILD_DIR)/kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $(BUILD_DIR)/kernel.sym
@@ -235,14 +249,14 @@ clean:
 	$(OBJ_DIR)/*.o            \
 	$(OBJ_DIR)/*.d            \
 	$(ASM_DIR)/*.asm          \
-	*.sym                     \
+	$(BUILD_DIR)/*.sym        \
 	$(BUILD_DIR)/vectors.S    \
 	$(BUILD_DIR)/bootblock    \
 	$(BUILD_DIR)/entryother   \
 	$(BUILD_DIR)/initcode     \
 	$(BUILD_DIR)/initcode.out \
-	kernel                    \
-	xv6.img                   \
+	$(BUILD_DIR)/kernel       \
+	$(IMAGES_DIR)/xv6.img     \
 	fs.img                    \
 	kernelmemfs               \
 	xv6memfs.img              \
