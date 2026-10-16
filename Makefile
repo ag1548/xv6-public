@@ -11,15 +11,17 @@ SCRIPTS_DIR   := scripts
 RUNOFF_DIR    := $(SCRIPTS_DIR)/runoff
 
 DIRS := \
-	$(SRC_DIR)     \
-	$(ASM_DIR)     \
-	$(OBJ_DIR)     \
-	$(LD_DIR)      \
-	$(INC_DIR)     \
-	$(BUILD_DIR)   \
-	$(IMAGES_DIR)  \
+	$(ASM_DIR) \
+	$(BUILD_DIR) \
+	$(IMAGES_DIR) \
+	$(INC_DIR) \
+	$(LD_DIR) \
+	$(OBJ_DIR) \
+	$(RUNOFF_DIR) \
 	$(SCRIPTS_DIR) \
-	$(RUNOFF_DIR)  \
+	$(SRC_DIR) \
+	$(UPROG_OBJ_DIR) \
+	$(UPROGS_DIR) \
 
 $(shell mkdir -p $(DIRS))
 
@@ -192,6 +194,24 @@ tags: $(OBJS) entryother.S _init
 $(BUILD_DIR)/vectors.S: $(SCRIPTS_DIR)/vectors.pl
 	$(SCRIPTS_DIR)/vectors.pl > $(BUILD_DIR)/vectors.S
 
+$(UPROG_OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) $(CFLAGS) -c $< -o $@
+
+$(UPROG_OBJ_DIR)/usys.o: src/asm/usys.S
+	$(CC) $(ASFLAGS) -c -o $(UPROG_OBJ_DIR)/usys.o src/asm/usys.S
+
+$(UPROG_OBJ_DIR)/ulib.o: src/ulib.c
+	$(CC) $(CFLAGS) -c -o $(UPROG_OBJ_DIR)/ulib.o src/ulib.c
+
+$(UPROG_OBJ_DIR)/printf.o: src/printf.c
+	$(CC) $(CFLAGS) -c -o $(UPROG_OBJ_DIR)/printf.o src/printf.c
+
+$(UPROG_OBJ_DIR)/umalloc.o: src/umalloc.c
+	$(CC) $(CFLAGS) -c -o $(UPROG_OBJ_DIR)/umalloc.o src/umalloc.c
+
+$(UPROG_OBJ_DIR)/forktest.o: src/forktest.c
+	$(CC) $(CFLAGS) -c -o $(UPROG_OBJ_DIR)/forktest.o src/forktest.c
+
 ULIB_OBJ_NAMES := \
 	ulib.o     \
 	usys.o     \
@@ -205,11 +225,11 @@ $(UPROGS_DIR)/_%: $(UPROG_OBJ_DIR)/%.o $(ULIB)
 	$(OBJDUMP) -S $@ > $(ASM_DIR)/$*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $(BUILD_DIR)/$*.sym
 
-_forktest: forktest.o $(ULIB)
+$(UPROGS_DIR)/_forktest: $(UPROG_OBJ_DIR)/forktest.o $(ULIB)
 	# forktest has less library code linked in - needs to be small
 	# in order to be able to max out the proc table.
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o _forktest forktest.o ulib.o usys.o
-	$(OBJDUMP) -S _forktest > forktest.asm
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $(UPROGS_DIR)/_forktest $(UPROG_OBJ_DIR)/forktest.o $(UPROG_OBJ_DIR)/ulib.o $(UPROG_OBJ_DIR)/usys.o
+	$(OBJDUMP) -S $(UPROGS_DIR)/_forktest > $(ASM_DIR)/forktest.asm
 
 $(BUILD_DIR)/mkfs: $(SRC_DIR)/mkfs.c $(INC_DIR)/fs.h
 	gcc -Werror -Wall -o $(BUILD_DIR)/mkfs $(SRC_DIR)/mkfs.c -iquote $(INC_DIR)
