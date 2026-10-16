@@ -212,7 +212,7 @@ _forktest: forktest.o $(ULIB)
 	$(OBJDUMP) -S _forktest > forktest.asm
 
 $(BUILD_DIR)/mkfs: $(SRC_DIR)/mkfs.c $(INC_DIR)/fs.h
-	gcc -Werror -Wall -o $(BUILD_DIR)/mkfs $(SRC_DIR)/mkfs.c -I$(INC_DIR)
+	gcc -Werror -Wall -o $(BUILD_DIR)/mkfs $(SRC_DIR)/mkfs.c -iquote $(INC_DIR)
 
 # Prevent deletion of intermediate files, e.g. cat.o, after first build, so
 # that disk image changes after first build are persistent until clean.  More
