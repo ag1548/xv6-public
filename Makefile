@@ -1,12 +1,14 @@
-SRC_DIR := src
-ASM_DIR := $(SRC_DIR)/asm
-OBJ_DIR := obj
-LD_DIR := linker
-INC_DIR := include
-BUILD_DIR := build
-IMAGES_DIR := $(BUILD_DIR)/images
-SCRIPTS_DIR := scripts
-RUNOFF_DIR := $(SCRIPTS_DIR)/runoff
+SRC_DIR       := src
+ASM_DIR       := $(SRC_DIR)/asm
+OBJ_DIR       := obj
+UPROG_OBJ_DIR := $(OBJ_DIR)/uprogs
+LD_DIR        := linker
+INC_DIR       := include
+BUILD_DIR     := build
+UPROGS_DIR    := $(BUILD_DIR)/uprogs
+IMAGES_DIR    := $(BUILD_DIR)/images
+SCRIPTS_DIR   := scripts
+RUNOFF_DIR    := $(SCRIPTS_DIR)/runoff
 
 DIRS := \
 	$(SRC_DIR)     \
@@ -190,12 +192,18 @@ tags: $(OBJS) entryother.S _init
 $(BUILD_DIR)/vectors.S: $(SCRIPTS_DIR)/vectors.pl
 	$(SCRIPTS_DIR)/vectors.pl > $(BUILD_DIR)/vectors.S
 
-ULIB = ulib.o usys.o printf.o umalloc.o
+ULIB_OBJ_NAMES := \
+	ulib.o     \
+	usys.o     \
+	printf.o   \
+	umalloc.o  \
 
-_%: %.o $(ULIB)
+ULIB = $(addprefix $(UPROG_OBJ_DIR)/,$(ULIB_OBJ_NAMES))
+
+$(UPROGS_DIR)/_%: $(UPROG_OBJ_DIR)/%.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
-	$(OBJDUMP) -S $@ > $*.asm
-	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
+	$(OBJDUMP) -S $@ > $(ASM_DIR)/$*.asm
+	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $(BUILD_DIR)/$*.sym
 
 _forktest: forktest.o $(ULIB)
 	# forktest has less library code linked in - needs to be small
@@ -203,8 +211,8 @@ _forktest: forktest.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o _forktest forktest.o ulib.o usys.o
 	$(OBJDUMP) -S _forktest > forktest.asm
 
-mkfs: mkfs.c fs.h
-	gcc -Werror -Wall -o mkfs mkfs.c
+$(BUILD_DIR)/mkfs: $(SRC_DIR)/mkfs.c $(INC_DIR)/fs.h
+	gcc -Werror -Wall -o $(BUILD_DIR)/mkfs $(SRC_DIR)/mkfs.c -I$(INC_DIR)
 
 # Prevent deletion of intermediate files, e.g. cat.o, after first build, so
 # that disk image changes after first build are persistent until clean.  More
@@ -212,25 +220,27 @@ mkfs: mkfs.c fs.h
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 .PRECIOUS: $(OBJ_DIR)/%.o
 
-UPROGS=\
-	_cat\
-	_echo\
-	_forktest\
-	_grep\
-	_init\
-	_kill\
-	_ln\
-	_ls\
-	_mkdir\
-	_rm\
-	_sh\
-	_stressfs\
-	_usertests\
-	_wc\
-	_zombie\
+UPROG_NAMES := \
+	_cat         \
+	_echo        \
+	_forktest    \
+	_grep        \
+	_init        \
+	_kill        \
+	_ln          \
+	_ls          \
+	_mkdir       \
+	_rm          \
+	_sh          \
+	_stressfs    \
+	_usertests   \
+	_wc          \
+	_zombie      \
 
-fs.img: mkfs README $(UPROGS)
-	./mkfs fs.img README $(UPROGS)
+UPROGS := $(addprefix $(UPROGS_DIR)/,$(UPROG_NAMES))
+
+$(IMAGES_DIR)/fs.img: $(BUILD_DIR)/mkfs README $(UPROGS)
+	$(BUILD_DIR)/mkfs $(IMAGES_DIR)/fs.img README $(UPROGS)
 
 -include $(OBJ_DIR)/*.d
 
@@ -289,9 +299,15 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 ifndef CPUS
 CPUS := 2
 endif
-QEMUOPTS = -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
-qemu: fs.img xv6.img
+QEMUOPTS =                                                        \
+	-drive file=$(IMAGES_DIR)/fs.img,index=1,media=disk,format=raw  \
+	-drive file=$(IMAGES_DIR)/xv6.img,index=0,media=disk,format=raw \
+	-smp $(CPUS)                                                    \
+	-m 512                                                          \
+	$(QEMUEXTRA)                                                    \
+
+qemu: $(IMAGES_DIR)/fs.img $(IMAGES_DIR)/xv6.img
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
 
 qemu-memfs: xv6memfs.img
