@@ -129,6 +129,11 @@ ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]nopie'),)
 CFLAGS += -fno-pie -nopie
 endif
 
+run:
+	@${MAKE} clean --no-print-directory
+	@${MAKE} $(IMAGES_DIR)/xv6.img --no-print-directory
+	@${MAKE} qemu --no-print-directory
+
 $(IMAGES_DIR)/xv6.img: $(BUILD_DIR)/bootblock $(BUILD_DIR)/kernel
 	dd if=/dev/zero of=$(IMAGES_DIR)/xv6.img count=10000
 	dd if=$(BUILD_DIR)/bootblock of=$(IMAGES_DIR)/xv6.img conv=notrunc
